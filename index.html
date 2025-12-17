@@ -165,7 +165,63 @@
     body.light .card{background:linear-gradient(180deg,rgba(11,23,36,0.02),transparent);box-shadow:0 6px 20px rgba(2,6,23,0.06)}
     body.light .profile, body.light .skill, body.light .mini{background:rgba(11,23,36,0.02);border:1px solid rgba(11,23,36,0.04)}
     body.light .socials a{background:rgba(11,23,36,0.02);color:#0b1724}
-    /* ...existing CSS... */
+
+    /* Responsive tweaks for tablet & phone */
+    @media (max-width: 900px) {
+      .container{padding:28px 20px}
+      .card{
+        grid-template-columns:1fr;
+        padding:18px;
+        gap:14px;
+      }
+      .shape{display:none} /* hide decorative shapes on smaller screens */
+
+      /* profile adjustments */
+      .profile{padding:16px;border-radius:12px;align-items:center}
+      .avatar{width:128px;height:128px}
+      .avatar img{width:78%;height:78%}
+      .name{font-size:1.15rem}
+      .bio{font-size:.92rem;padding:4px 2px}
+
+      /* right column */
+      .right{gap:12px}
+      .intro{padding:12px}
+      .header-mini{min-width:unset}
+
+      /* skills grid becomes more compact */
+      .skills{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+      .skill{padding:10px;border-radius:10px}
+
+      /* mini links stack on narrow */
+      .mini-row{flex-direction:row;flex-wrap:wrap;gap:8px}
+      .mini{flex:1 1 48%;padding:10px}
+    }
+
+    @media (max-width: 600px) {
+      .container{padding:20px 14px}
+      .card{padding:14px;gap:12px}
+      .avatar{width:110px;height:110px}
+      .name{font-size:1.05rem}
+      .role{font-size:.92rem}
+      .skills{grid-template-columns:1fr}
+      .mini-row{flex-direction:column}
+      .mini{flex:1 1 auto;width:100%}
+      .socials a{width:48px;height:48px}
+      .profile .theme-toggle{left:12px;bottom:12px;width:40px;height:40px}
+    }
+
+    @media (max-width: 420px) {
+      html,body{font-size:14px}
+      .container{padding:14px}
+      .avatar{width:96px;height:96px}
+      .avatar img{width:76%;height:76%}
+      .name{font-size:1rem}
+      .bio{font-size:.9rem}
+      .socials{gap:10px}
+      .socials a{width:44px;height:44px}
+      .intro h2{font-size:1.05rem}
+      .card{border-radius:14px}
+    }
   </style>
 </head>
 
@@ -369,3 +425,4 @@
   </script>
 </body>
 </html>
+

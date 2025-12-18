@@ -326,8 +326,7 @@
   </div>
 
 <script>
-  // ...existing other JS (theme) stays below unchanged ...
-  // Updated music player logic only:
+  // ===== Music Player (safe for GitHub Pages) =====
   const audio = document.getElementById('audio');
   const playBtn = document.getElementById('playBtn');
   const prevBtn = document.getElementById('prevBtn');
@@ -340,45 +339,46 @@
   let list = [];
   let idx = 0;
 
-  // safe fetch list.json, fallback to defaults if missing or invalid
   (async function initList(){
     try{
-      const res = await fetch('music/list.json', {cache:'no-store'});
+      const res = await fetch('music/list.json', { cache: 'no-store' });
       if(res.ok){
         const files = await res.json();
         if(Array.isArray(files) && files.length) list = files;
       }
     }catch(e){}
 
-    // fallback defaults if fetch failed or list is empty
     if(!list.length){
-      const fallbacks = ['bgm.m4a','bgm.mp3'];
-      list = fallbacks;
+      // fallback đúng với repo hiện tại
+      list = ['Tangled Up (Lokee Remix).m4a'];
     }
 
     if(list.length){
       enableControls(true);
       load(0);
-    } else {
+    }else{
       enableControls(false);
       track.textContent = 'Không có bài hát';
     }
   })();
 
   function enableControls(on){
-    [playBtn, prevBtn, nextBtn].forEach(b => { if(b) b.disabled = !on; });
+    [playBtn, prevBtn, nextBtn].forEach(b => b && (b.disabled = !on));
   }
 
   function sanitizeName(name){
     try{
-      const n = decodeURIComponent(name).split('/').pop().split('?')[0];
-      return n.replace(/\.[^/.]+$/,'');
-    }catch(e){ return name; }
+      return decodeURIComponent(name)
+        .split('/').pop()
+        .replace(/\.[^/.]+$/, '');
+    }catch{
+      return name;
+    }
   }
 
   function load(i){
     if(!list.length) return;
-    idx = ((i % list.length) + list.length) % list.length;
+    idx = (i + list.length) % list.length;
     const file = list[idx];
     audio.src = 'music/' + file;
     track.textContent = sanitizeName(file);
@@ -386,42 +386,37 @@
     audio.play().catch(()=>{}); // ignore autoplay errors
   }
 
-  playBtn.addEventListener('click', ()=> {
-    if(!audio.src) { load(0); return; }
-    if(audio.paused) audio.play().catch(()=>{}); else audio.pause();
-  });
-  prevBtn.addEventListener('click', ()=> load(idx - 1));
-  nextBtn.addEventListener('click', ()=> load(idx + 1));
-  audio.addEventListener('ended', ()=> load(idx + 1));
+  playBtn.onclick = () => {
+    if(!audio.src) return load(0);
+    audio.paused ? audio.play().catch(()=>{}) : audio.pause();
+  };
+  prevBtn.onclick = () => load(idx - 1);
+  nextBtn.onclick = () => load(idx + 1);
+  audio.onended = () => load(idx + 1);
 
-  audio.addEventListener('play', ()=> playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>');
-  audio.addEventListener('pause', ()=> playBtn.innerHTML = '<i class="fa-solid fa-play"></i>');
+  audio.onplay = () => playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  audio.onpause = () => playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
 
-  audio.addEventListener('timeupdate', ()=>{
+  audio.ontimeupdate = () => {
     if(!audio.duration) return;
-    bar.style.width = ((audio.currentTime / audio.duration) * 100) + '%';
+    const pct = audio.currentTime / audio.duration * 100;
+    bar.style.width = pct + '%';
     time.textContent = formatTime(audio.currentTime);
-    // update progressbar ARIA
-    progress.setAttribute('aria-valuenow', Math.round((audio.currentTime / audio.duration) * 100));
-  });
+    progress.setAttribute('aria-valuenow', Math.round(pct));
+  };
 
-  progress.addEventListener('click', (e) => {
+  progress.onclick = e => {
     if(!audio.duration) return;
     const r = progress.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
     audio.currentTime = pct * audio.duration;
-  });
+  };
 
   function formatTime(t){
     if(!isFinite(t)) return '0:00';
     const m = Math.floor(t/60), s = Math.floor(t%60);
     return m + ':' + String(s).padStart(2,'0');
   }
-
-  // accessibility: keyboard controls for space on play button
-  playBtn.addEventListener('keydown', (e)=> {
-    if(e.code === 'Space'){ e.preventDefault(); playBtn.click(); }
-  });
 
   /* ===== THEME TOGGLE (clean) ===== */
   (function(){
@@ -446,6 +441,3 @@
 </script>
 </body>
 </html>
-
-
-sda

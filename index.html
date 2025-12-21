@@ -112,6 +112,27 @@
       background:linear-gradient(90deg,var(--accent),#06b6d4)}
     .time{min-width:48px;text-align:right;font-size:.8rem;color:#b6cffb}
 
+    /* volume control & left column inside player */
+    .left-controls{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+    .left-controls .btn-row{display:flex;gap:12px}
+    .volume{width:114px;padding:2px 0}
+    .volume input[type="range"]{
+      -webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:rgba(255,255,255,.12);outline:none;
+    }
+    .volume input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:linear-gradient(90deg,var(--accent),#06b6d4);box-shadow:0 4px 10px rgba(0,0,0,.35);
+    }
+    .volume input[type="range"]::-moz-range-thumb{
+      width:14px;height:14px;border-radius:50%;background:linear-gradient(90deg,var(--accent),#06b6d4);border:none;
+    }
+
+    /* responsive: keep volume compact on small screens */
+    @media(max-width:600px){
+      .volume{width:100%}
+      .left-controls{width:100%}
+      .left-controls .btn-row{gap:8px}
+    }
+
     /* RIGHT */
     .right{display:flex;flex-direction:column;gap:18px}
     .intro{
@@ -258,14 +279,21 @@
         <div class="player" aria-live="polite">
           <div class="player-title">Nhạc nền</div>
           <div class="controls" role="group" aria-label="player controls">
-            <button class="play" id="prevBtn" title="Trước" aria-label="Trước" disabled><i class="fa-solid fa-backward"></i></button>
-            <button class="play" id="playBtn" title="Phát / Tạm dừng" aria-label="Phát / Tạm dừng" disabled><i class="fa-solid fa-play"></i></button>
-            <button class="play" id="nextBtn" title="Kế tiếp" aria-label="Kế tiếp" disabled><i class="fa-solid fa-forward"></i></button>
-            <div class="progress" id="progress" aria-valuemin="0" aria-valuemax="100" role="progressbar"><span id="bar" style="width:0%"></span></div>
-            <div class="time" id="time">0:00</div>
-          </div>
-          <div class="track" id="track">Không có bài hát</div>
-        </div>
+            <div class="left-controls">
+              <div class="btn-row">
+                <button class="play" id="prevBtn" title="Trước" aria-label="Trước" disabled><i class="fa-solid fa-backward"></i></button>
+                <button class="play" id="playBtn" title="Phát / Tạm dừng" aria-label="Phát / Tạm dừng" disabled><i class="fa-solid fa-play"></i></button>
+                <button class="play" id="nextBtn" title="Kế tiếp" aria-label="Kế tiếp" disabled><i class="fa-solid fa-forward"></i></button>
+              </div>
+              <div class="volume" aria-label="Volume control">
+                <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Âm lượng">
+              </div>
+            </div>
+             <div class="progress" id="progress" aria-valuemin="0" aria-valuemax="100" role="progressbar"><span id="bar" style="width:0%"></span></div>
+             <div class="time" id="time">0:00</div>
+           </div>
+           <div class="track" id="track">Không có bài hát</div>
+         </div>
 
         <!-- theme-toggle (inserted) -->
         <button id="themeToggle"
@@ -335,9 +363,25 @@
   const bar = document.getElementById('bar');
   const time = document.getElementById('time');
   const track = document.getElementById('track');
+  const volumeEl = document.getElementById('volume');
 
   let list = [];
   let idx = 0;
+
+  // initialize volume (persisted)
+  (function initVolume(){
+    const saved = localStorage.getItem('volume');
+    const v = parseFloat(saved !== null ? saved : (volumeEl ? volumeEl.value : '0.8'));
+    audio.volume = isFinite(v) ? v : 0.8;
+    if(volumeEl) volumeEl.value = audio.volume;
+    if(volumeEl){
+      volumeEl.addEventListener('input', e => {
+        const val = parseFloat(e.target.value);
+        audio.volume = val;
+        localStorage.setItem('volume', String(val));
+      });
+    }
+  })();
 
   (async function initList(){
     try{
